@@ -1,0 +1,20 @@
+# STM32CubeIDE Workspace
+.metadata/
+
+# Build folders
+**/Debug/
+**/Release/
+
+# Generated binaries
+*.elf
+*.bin
+*.hex
+*.map
+*.list
+
+# Logs
+*.log
+
+# OS files
+Thumbs.db
+.DS_Store
