@@ -19,27 +19,28 @@
 #include <stdint.h>
 #include <stdio.h>
 
+//macros
+#define SRAM_Start 0x20000000U
+#define SRAM_Size (128*512)
+#define SRAM_End (SRAM_Start) + (SRAM_Size)
+#define STACK_Start SRAM_End
 
-#if !defined(__SOFT_FP__) && defined(__ARM_FP)
-  #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
-#endif
+#define STACK_MSP_START STACK_Start
+
+
+int fun_add (int a, int b, int c, int d){
+		return a+b+c+d;
+	}
 
 int main(void)
 {
-	uint32_t *ptr = (uint32_t*) 0x20000200;
-	*ptr = 0xff;
+	int ret;
 
-	//Normal Method
-	*ptr &= ~(1<<7); //cLEAR THE 7TH BIT
+	ret = fun_add (1,4,5,6);
 
-	//Reset the value to 0Xff
-	*ptr = 0xff;
+	printf("Result = %d \n", ret);
 
 
-	//Bit band Method
-	uint8_t *alias_address =(uint8_t*) (0x22000000 +(32*(0x20000200-0x20000000))+28);
-	*alias_address =0;
-
-    /* Loop forever */
+	/* Loop forever */
 	for(;;);
 }

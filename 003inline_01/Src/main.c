@@ -17,8 +17,6 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
-
 
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)
   #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
@@ -26,20 +24,20 @@
 
 int main(void)
 {
-	uint32_t *ptr = (uint32_t*) 0x20000200;
-	*ptr = 0xff;
-
-	//Normal Method
-	*ptr &= ~(1<<7); //cLEAR THE 7TH BIT
-
-	//Reset the value to 0Xff
-	*ptr = 0xff;
-
-
-	//Bit band Method
-	uint8_t *alias_address =(uint8_t*) (0x22000000 +(32*(0x20000200-0x20000000))+28);
-	*alias_address =0;
-
+	__asm volatile ("LDR R1, =#0x20001000");
+	__asm volatile ("LDR R2, =#0x20001005");
+	__asm volatile ("LDR R0, [R1]");
+	__asm volatile ("LDRB R1, [R2]");
+	__asm volatile ("ADD R0,R0,R2");
+	__asm volatile ("STR R0, [R2]");
     /* Loop forever */
 	for(;;);
 }
+
+/* Here I got a Problem, I did Initilised the R2 at the address of 0x20001005, Funny why I got the learn ENDIANNESS due to it
+ * see in the course the R2 is initilised at 0x20001004 which is exactly 4 byte appart from the 0x20001000 and the
+ * LDR is a 32-bit word load instruction. It always reads four consecutive bytes starting from the address in the base register.
+ * Since the Cortex-M uses little-endian byte ordering, the byte at the lowest address becomes the least significant byte of the register.
+ *  Therefore, the bytes 05 00 00 20 are assembled into the 32-bit value 0x20000005.
+ *  If I wanted to load only a single byte, I would use LDRB.
+ */
