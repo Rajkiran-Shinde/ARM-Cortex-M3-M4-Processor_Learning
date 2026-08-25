@@ -1,6 +1,7 @@
 #include<stdint.h>
 #include<stdio.h>
 #include"main.h"
+#include "led.h"
 
 //Prototypes of the Functions
 void task1_handler(void);
@@ -15,27 +16,31 @@ __attribute ((naked)) void SysTick_Handler(void);
 
 __attribute ((naked)) void switch_sp_psp(void);
 
+void delay(uint32_t count);
+
 uint32_t get_psp(void);
 
 void init_task_stack(void);
 
 void enable_fault(void);
 
-uint32_t pspOfTasks [MAX_TASK]= {T1_Stack_Start, T2_Stack_Start, T3_Stack_Start, T4_Stack_Start};
-
-uint32_t task_handlers [MAX_TASK];
-
 uint32_t current_task = 0; // Task one is running
+
+typedef struct {
+	uint32_t psp_vlaue;
+	uint32_t block_count;
+	uint32_t current_state;
+	void (*task_handler)(void);
+}TCP_t; //Task control block
+
+TCP_t user_tasks [MAX_TASK];
 
 int main(void)
 {
 	enable_fault ();
 	init_scheduler_stack(Sch_Stack_Start);
 
-	task_handlers[0] = (uint32_t) task1_handler;
-	task_handlers[1] = (uint32_t) task2_handler;
-	task_handlers[2] = (uint32_t) task3_handler;
-	task_handlers[3] = (uint32_t) task4_handler;
+	led_init_all();
 
 
 	init_task_stack();//Dummy values to sf1 sf 2
@@ -51,25 +56,49 @@ int main(void)
 
 void task1_handler(void){
 	while(1){
-		printf("Task1");
+		led_on(LED_GREEN);
+
+		delay(DELAY_COUNT_1S);
+
+		led_off(LED_GREEN);
+
+		delay(DELAY_COUNT_1S);
 	}
 }
 
 void task2_handler(void){
 	while(1){
-		printf("Task2");
+        led_on(LED_ORANGE);
+
+        delay(DELAY_COUNT_500MS);
+
+        led_off(LED_ORANGE);
+
+        delay(DELAY_COUNT_500MS);
 	}
 }
 
 void task3_handler(void){
 	while(1){
-		printf("Task3");
+        led_on(LED_BLUE);
+
+        delay(DELAY_COUNT_250MS);
+
+        led_off(LED_BLUE);
+
+        delay(DELAY_COUNT_250MS);
 	}
 }
 
 void task4_handler(void){
 	while(1){
-		printf("Task4");
+        led_on(LED_RED);
+
+        delay(DELAY_COUNT_125MS);
+
+        led_off(LED_RED);
+
+        delay(DELAY_COUNT_125MS);
 	}
 }
 
@@ -94,12 +123,29 @@ void init_systick_timer(uint32_t tick_hz){
 }
 
 __attribute ((naked)) void init_scheduler_stack(uint32_t scheduler_top_stack){
+
 	__asm volatile ("MSR MSP, %0" : : "r"(scheduler_top_stack));
 	__asm volatile ("BX LR"); //As we are using the naked function so there is no apolouge or prolouge hence the value is not returend
 	//to do that we are using the branch indirect to LR Return from Function call to return value.
 }
 
 void init_task_stack(void){
+
+	user_tasks [0]. current_state = TASK_RUNNING_STATE;
+	user_tasks [1]. current_state = TASK_RUNNING_STATE;
+	user_tasks [2]. current_state = TASK_RUNNING_STATE;
+	user_tasks [3]. current_state = TASK_RUNNING_STATE;
+
+	user_tasks [0]. psp_value = T1_Stack_Start;
+	user_tasks [1]. psp_value = T1_Stack_Start;
+	user_tasks [2]. psp_value = T1_Stack_Start;
+	user_tasks [3]. psp_value = T1_Stack_Start;
+
+	user_tasks[0]. task_handler = task1_handler;
+	user_tasks[1]. task_handler = task2_handler;
+	user_tasks[2]. task_handler = task3_handler;
+	user_tasks[3]. task_handler = task4_handler;
+
 	uint32_t *pPSP;
 	for (int i =0; i< MAX_TASK; i++){
 		pPSP= (uint32_t*) pspOfTasks [i];
