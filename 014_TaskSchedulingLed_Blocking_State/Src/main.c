@@ -13,7 +13,7 @@ void task4_handler(void);
 void init_systick_timer(uint32_t tick_hz);
 __attribute ((naked)) void init_scheduler_stack(uint32_t scheduler_top_stack);
 
-__attribute ((naked)) void SysTick_Handler(void);
+void SysTick_Handler(void);
 
 __attribute ((naked)) void switch_sp_psp(void);
 
@@ -113,8 +113,8 @@ void task4_handler(void){
 
 
 void init_systick_timer(uint32_t tick_hz){
-	uint32_t *pSCSR = (uint32_t*)0xE000E010;//Systick control and status register to enable the systic and setting
-	uint32_t *pSRVR = (uint32_t*)0xE000E014;// Relode value Systick relode value register
+	volatile uint32_t *pSCSR = (volatile uint32_t*)0xE000E010;//Systick control and status register to enable the systic and setting
+	volatile uint32_t *pSRVR = (volatile uint32_t*)0xE000E014;// Relode value Systick relode value register
 	uint32_t countValue = ((SYSTICK_TM/tick_hz)-1);
 	//Clear the value of svr
 	*pSRVR &= ~(0x00FFFFFFFF);
@@ -278,8 +278,8 @@ void unblock_tasks(void){
 	}
 }
 
-__attribute ((naked)) void SysTick_Handler(void){
-	uint32_t *pICSR =(uint32_t*) 0xE000ED04;
+void SysTick_Handler(void){
+	volatile uint32_t *pICSR =(volatile uint32_t*) 0xE000ED04;
 	update_global_tick_count();
 	unblock_tasks();
 

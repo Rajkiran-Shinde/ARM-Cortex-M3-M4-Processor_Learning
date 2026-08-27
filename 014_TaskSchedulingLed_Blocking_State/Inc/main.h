@@ -26,7 +26,7 @@
 
 //Systick Timer config
 #define TICK_HZ 1000U
-#define SYSTICK_TM 180000000U //PLL CLOCK
+#define SYSTICK_TM 16000000U //Changed the PLL to HSI as PLL is not initilised
 
 #define DUMMY_XPSR 0x01000000U
 
